@@ -43,6 +43,7 @@ main {
 .main-header__item a {
   text-decoration: none;
   color: white;
+  text-transform: capitalize;
 }
 
 .main-header__item a:hover,

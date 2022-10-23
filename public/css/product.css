@@ -5,6 +5,7 @@
 }
 
 .product-item {
+    margin-top: 3rem;
     width: 20rem;
     max-width: 95%;
 }
