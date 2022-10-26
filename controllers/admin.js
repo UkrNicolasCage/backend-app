@@ -8,23 +8,19 @@ exports.getAddProduct = (req, res, next) => {
   });
 };
 
-exports.postAddProduct = (req, res, next) => {
+exports.postAddProduct = async (req, res, next) => {
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  Product.create({
+  await req.user.createProduct({
     title,
     price,
     imageUrl,
     description,
-  })
-    .then(() => {
-      res.redirect("/");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  });
+
+  res.redirect("/");
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -95,6 +91,11 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const { productId } = req.body;
-  Product.delete(productId);
-  res.redirect("/admin/products");
+  Product.destroy({
+    where: {
+      id: productId,
+    },
+  }).then(() => {
+    res.redirect("/admin/products");
+  });
 };
