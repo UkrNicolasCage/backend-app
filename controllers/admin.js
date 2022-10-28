@@ -1,7 +1,6 @@
 const mongodb = require("mongodb");
+const product = require("../models/product");
 const Product = require("../models/product");
-
-const ObjectId = mongodb.ObjectId;
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -13,14 +12,14 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = async (req, res, next) => {
   const { title, price, description, imageUrl } = req.body;
-  const product = new Product(
+  const product = new Product({
     title,
     price,
     description,
     imageUrl,
-    null,
-    req.user._id
-  );
+    userId: req.user,
+  });
+
   await product.save();
 
   res.redirect("/");
@@ -28,6 +27,7 @@ exports.postAddProduct = async (req, res, next) => {
 
 exports.getEditProduct = async (req, res, next) => {
   const editMode = req.query.edit;
+
   if (!editMode) {
     return res.redirect("/");
   }
@@ -49,21 +49,21 @@ exports.getEditProduct = async (req, res, next) => {
 
 exports.postEditProduct = async (req, res, next) => {
   const { productId, title, price, description, imageUrl } = { ...req.body };
-  const updatedProduct = new Product(
-    title,
-    price,
-    description,
-    imageUrl,
-    new ObjectId(productId)
-  );
-  updatedProduct.save();
+
+  const updatedProduct = await Product.findById(productId);
+  updatedProduct.title = title;
+  updatedProduct.price = price;
+  updatedProduct.description = description;
+  updatedProduct.imageUrl = imageUrl;
+
+  await updatedProduct.save();
 
   res.redirect("/admin/products");
 };
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.fetchAll();
+    const products = await Product.find();
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
@@ -77,7 +77,7 @@ exports.getProducts = async (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   const { productId } = req.body;
   try {
-    Product.deleteById(productId);
+    await Product.findByIdAndRemove(productId);
   } catch (err) {
     console.log(err);
   } finally {
