@@ -3,8 +3,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  name: { type: String, required: true },
   email: { type: String, required: true },
+  password: {
+    type: String,
+    required: true,
+  },
   cart: {
     items: [
       {
@@ -44,12 +47,11 @@ userSchema.methods.addToCart = function (product) {
 
 userSchema.methods.removeFromCart = async function (productId) {
   const updatedCartItems = this.cart.items.filter((item) => {
-
     return item.productId.toString() === productId.toString();
   });
-  
+
   this.cart.items = updatedCartItems;
-  await  this.save();
+  await this.save();
 };
 
 userSchema.methods.clearCart = function () {
