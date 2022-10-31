@@ -6,6 +6,7 @@ exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
+    editing: false,
   });
 };
 
@@ -26,7 +27,6 @@ exports.postAddProduct = async (req, res, next) => {
 
 exports.getEditProduct = async (req, res, next) => {
   const editMode = req.query.edit;
-
   if (!editMode) {
     return res.redirect("/");
   }
@@ -50,19 +50,23 @@ exports.postEditProduct = async (req, res, next) => {
   const { productId, title, price, description, imageUrl } = { ...req.body };
 
   const updatedProduct = await Product.findById(productId);
-  updatedProduct.title = title;
-  updatedProduct.price = price;
-  updatedProduct.description = description;
-  updatedProduct.imageUrl = imageUrl;
+  if (updatedProduct.userId.toString() !== req.user._id.toString()) {
+    res.redirect("/");
+  } else {
+    updatedProduct.title = title;
+    updatedProduct.price = price;
+    updatedProduct.description = description;
+    updatedProduct.imageUrl = imageUrl;
 
-  await updatedProduct.save();
+    await updatedProduct.save();
 
-  res.redirect("/admin/products");
+    res.redirect("/admin/products");
+  }
 };
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({ userId: req.user._id });
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
@@ -76,7 +80,7 @@ exports.getProducts = async (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   const { productId } = req.body;
   try {
-    await Product.findByIdAndRemove(productId);
+    await Product.deleteOne({ _id: productId, userId: req.user._id });
   } catch (err) {
     console.log(err);
   } finally {

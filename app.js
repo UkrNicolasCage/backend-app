@@ -12,7 +12,7 @@ const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 const User = require("./models/user");
-const mongoDbURI = ""
+const mongoDbURI =  "mongodb+srv://vlaluk352:vovakill441@study1.bz9oka3.mongodb.net/?retryWrites=true&w=majority";
 
 const app = express();
 const store = new dbStore({ uri: mongoDbURI, collection: "sessions" });
