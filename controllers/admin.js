@@ -57,7 +57,6 @@ exports.postEditProduct = async (req, res, next) => {
     updatedProduct.price = price;
     updatedProduct.description = description;
     updatedProduct.imageUrl = imageUrl;
-
     await updatedProduct.save();
 
     res.redirect("/admin/products");

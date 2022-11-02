@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
+const { validationResult } = require("express-validator/check");
 
 const User = require("../models/user");
 
@@ -23,12 +24,23 @@ exports.getLogin = (req, res, next) => {
     path: "/login",
     pageTitle: "Login",
     errorMessage,
+    oldInput: { email: "", password: "" },
   });
 };
 
 exports.postLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: errors.array()[0].msg,
+        oldInput: { email, password },
+      });
+      return;
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -68,27 +80,33 @@ exports.getSignup = (req, res, next) => {
     path: "/signup",
     pageTitle: "Signup",
     errorMessage,
+    oldInput: { email: "", password: "" },
   });
 };
 
 exports.postSignup = async (req, res, next) => {
   const { email, password } = req.body;
-
+  const errors = validationResult(req);
   try {
-    const userDoc = await User.findOne({ email: email });
-    if (userDoc) {
-      req.flash("error", "E-mail exists already, please pick a different one.");
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 12);
-      const user = new User({
-        password: hashedPassword,
-        email: email,
-        cart: { items: [] },
+    if (!errors.isEmpty()) {
+      res.status(422).render("auth/signup", {
+        path: "/signup",
+        pageTitle: "Signup",
+        errorMessage: errors.array()[0].msg,
+        oldInput: { email, password },
       });
-      await user.save();
+      return;
     }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = new User({
+      password: hashedPassword,
+      email: email,
+      cart: { items: [] },
+    });
+    await user.save();
+    res.redirect("/login");
   } catch (err) {
-  } finally {
     res.redirect("/login");
   }
 };
