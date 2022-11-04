@@ -11,16 +11,19 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = async (req, res, next) => {
-  const { title, price, description, imageUrl } = req.body;
-  const product = new Product({
-    title,
-    price,
-    description,
-    imageUrl,
-    userId: req.user,
-  });
+  try {
+    const { title, price, description, imageUrl } = req.body;
 
-  await product.save();
+    const product = new Product({
+      title,
+      price,
+      description,
+      imageUrl,
+      userId: req.user,
+    });
+
+    await product.save();
+  } catch (err) {}
 
   res.redirect("/");
 };
@@ -37,12 +40,17 @@ exports.getEditProduct = async (req, res, next) => {
 
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
-      path: "/admin/edit-product",
+      path: "/admin/add-product",
       editing: editMode,
       product: product,
     });
   } catch (err) {
-    console.log(err);
+    res.status(500).render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "/admin/add-product",
+      editing: false,
+      
+    });
   }
 };
 

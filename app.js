@@ -12,6 +12,8 @@ const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 const User = require("./models/user");
+const mongoDbURI =
+  "mongodb+srv://vlaluk352:vovakill441@study1.bz9oka3.mongodb.net/?retryWrites=true&w=majority";
 
 const app = express();
 const store = new dbStore({ uri: mongoDbURI, collection: "sessions" });
@@ -34,12 +36,21 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use(async (req, res, next) => {
-  if (!req.session.user) {
-    return next();
+  try {
+    if (!req.session.user) {
+      next();
+      return;
+    }
+    const user = await User.findById(req.session.user._id);
+    if (!user) {
+      next();
+      return;
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    throw new Error()
   }
-  const user = await User.findById(req.session.user._id);
-  req.user = user;
-  next();
 });
 
 app.use((req, res, next) => {
