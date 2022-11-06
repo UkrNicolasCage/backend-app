@@ -12,13 +12,18 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = async (req, res, next) => {
   try {
-    const { title, price, description, imageUrl } = req.body;
+    const { title, price, description } = req.body;
+    const image = req.file;
+    if (!image) {
+      return;
+    }
+
 
     const product = new Product({
       title,
       price,
       description,
-      imageUrl,
+      imageUrl: image.path,
       userId: req.user,
     });
 
@@ -49,7 +54,6 @@ exports.getEditProduct = async (req, res, next) => {
       pageTitle: "Edit Product",
       path: "/admin/add-product",
       editing: false,
-      
     });
   }
 };
